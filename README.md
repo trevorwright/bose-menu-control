@@ -7,17 +7,48 @@ mode with the other stored modes, and the active immersive audio setting (Off, S
 
 Verified against QuietComfort Ultra Headphones (2nd Gen), firmware 8.2.20. Requires macOS 13 or later.
 
+## Install
+
+Building from source needs Xcode or the command-line tools (`xcode-select --install`).
+
+```sh
+git clone https://github.com/trevorwright/bose-menu-control.git
+cd bose-menu-control
+make install
+```
+
+That builds the app and copies it to `/Applications`, or to `~/Applications` if `/Applications`
+is not writable. To choose the location yourself:
+
+```sh
+make install APP_DIR=~/Applications
+```
+
+The app has no Dock icon and no main window; look for the headphones icon in the menu bar. macOS
+asks for Bluetooth access on first launch. If you decline, enable it later in System Settings >
+Privacy & Security > Bluetooth. Because you compile it yourself the app is never quarantined, so
+there is no Gatekeeper warning and nothing needs to be notarized.
+
+Update to a newer version, or remove it, with:
+
+```sh
+git pull && make install
+make uninstall
+```
+
+Each install of an ad hoc signed build counts as a new app to macOS and asks for Bluetooth access
+again; see below for how to sign with a real identity and keep the permission.
+
 ## Build and run
 
-Build a signed app bundle and launch it:
+`make run` builds the bundle and launches it in place, without installing:
 
 ```sh
 make run
 ```
 
-That produces `.build/BoseMenuControl.app`. The app has no Dock icon and no main window; look for
-the headphones icon in the menu bar. macOS asks for Bluetooth access on first launch. If you decline,
-enable it later in System Settings > Privacy & Security > Bluetooth.
+That produces `.build/BoseMenuControl.app`, which is build output — `make clean` deletes it. Use
+`make install` for a copy that stays put.
 
 The bundle is ad hoc signed by default, so macOS treats each rebuild as a new app and asks for
 Bluetooth access again. Sign with a real identity to keep the permission across rebuilds:
@@ -79,7 +110,8 @@ headphones sent no unsolicited frames, so there is no protocol-level wear signal
 
 User mode slots store the name `None` when they use a Bose preset name, so the app labels those
 slots from the prompt ID (for example ID 13 is Focus). When live settings no longer match a stored
-mode the headphones report mode `0xFF`; the popover shows that as no stored mode being active.
+mode the headphones report mode `0xFF`; the popover marks that with a checked `Custom` row, which
+appears only in that state and never alongside an active mode.
 
 Logs are available with:
 
