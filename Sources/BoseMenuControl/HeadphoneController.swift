@@ -66,6 +66,12 @@ final class HeadphoneController: ObservableObject {
         guard status == .connected else { return }
         do {
             try await readBattery()
+            // A mode load that failed during connect leaves `modes` empty, and the popover
+            // shows "Loading modes…" for as long as it stays that way. Retry it here so a
+            // transient failure heals on the next poll instead of needing a restart.
+            if headphones?.modes.isEmpty ?? false {
+                try await readModes()
+            }
             try await readCurrentMode()
             try await readLiveSettings()
             lastError = nil
@@ -138,7 +144,21 @@ final class HeadphoneController: ObservableObject {
         headphones?.battery = battery
     }
 
+    /// Reads mode capabilities and every stored slot, with one retry.
+    ///
+    /// The exchanges immediately after `ready` can be slow enough to hit the request
+    /// timeout while the link is still settling, and this is the one call whose failure
+    /// is visible as a permanently stuck "Loading modes…".
     private func readModes() async throws {
+        do {
+            try await readModesOnce()
+        } catch {
+            Log.controller.notice("Retrying mode load after \(String(describing: error), privacy: .public)")
+            try await readModesOnce()
+        }
+    }
+
+    private func readModesOnce() async throws {
         let payload = try await connection.get(.modeCapabilities)
         guard let capabilities = ModeCapabilities(payload: payload), (1...32).contains(capabilities.totalSlots) else {
             throw BMAPError.malformedReply(.modeCapabilities)

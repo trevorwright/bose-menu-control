@@ -67,7 +67,12 @@ final class BoseBLEConnection: NSObject {
     // MARK: Requests
 
     /// Sends a packet and waits for its reply. Requests are serialized so replies cannot be confused.
-    func exchange(_ request: BMAPPacket, timeout: Duration = .seconds(3)) async throws -> BMAPPacket {
+    ///
+    /// The timeout is generous because BMAP shares the radio with the A2DP audio stream: replies
+    /// normally land in about 60ms, but while audio is playing they have been measured arriving
+    /// 2-3.5s later. A tighter timeout abandons a reply that is still in flight, which showed up
+    /// as the mode list failing to load.
+    func exchange(_ request: BMAPPacket, timeout: Duration = .seconds(10)) async throws -> BMAPPacket {
         let previous = queueTail
         let task = Task<BMAPPacket, Error> {
             await previous?.value
