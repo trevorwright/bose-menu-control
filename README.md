@@ -4,6 +4,7 @@ A macOS menu bar app for Bose headphones. It shows a headphones icon with the cu
 percentage while headphones are connected, and a slashed headphones icon while they are not.
 Clicking the icon opens a popover with the headphone name, battery level, the active listening
 mode with the other stored modes, and the active immersive audio setting (Off, Still, Motion).
+The gear button in the popover opens a small settings window with a "Start at login" toggle.
 
 Verified against QuietComfort Ultra Headphones (2nd Gen), firmware 8.2.20. Requires macOS 13 or later.
 
@@ -84,7 +85,8 @@ one-byte segment header followed by a BMAP frame of `[block, function, operator,
 | `Bluetooth/BoseBLEConnection.swift` | CoreBluetooth discovery, connection, reconnection, and one-at-a-time request/response |
 | `Bluetooth/AudioDeviceMonitor.swift` | CoreAudio listener that reports whether the headphones are present as an audio device |
 | `HeadphoneController.swift` | Publishes device state to the UI, polls battery every minute, applies mode changes |
-| `Views/` | Menu bar label and popover |
+| `LaunchAtLogin.swift` | Login-item registration for the app bundle through `SMAppService` |
+| `Views/` | Menu bar label, popover, and settings window |
 
 Functions used:
 
@@ -97,6 +99,14 @@ Functions used:
 | 31.6 | Stored mode slot, 48 bytes |
 | 31.3 | Current mode; `START [slot, 0]` switches modes silently |
 | 31.10 | Live settings `[cnc, autoCNC, immersive, wind, anc]`; `SETGET` changes immersive audio |
+
+### Start at login
+
+The settings window registers the app bundle itself as a login item with `SMAppService.mainApp`,
+so there is no helper bundle and no `launchd` plist to install. macOS lists it under System
+Settings > General > Login Items, where turning it off there is reflected the next time the
+settings window opens. `SMAppService` registers a bundle, so the toggle is disabled for the bare
+executable that `make dev` builds; use an installed or `make run` build to change it.
 
 ### Wear detection
 

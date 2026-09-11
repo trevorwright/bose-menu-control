@@ -22,6 +22,13 @@ struct PopoverView: View {
                         .lineLimit(2)
                 }
                 Spacer()
+                Button {
+                    SettingsWindowController.shared.show()
+                } label: {
+                    Image(systemName: "gearshape")
+                }
+                .buttonStyle(.borderless)
+                .help("Settings")
                 Button("Quit") { controller.quit() }
                     .keyboardShortcut("q")
             }
