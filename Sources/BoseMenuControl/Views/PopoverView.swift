@@ -68,7 +68,19 @@ private struct ConnectedView: View {
                         Task { await controller.selectMode(mode) }
                     }
                 }
+                // The device reports mode 0xFF when the live settings no longer match any
+                // stored mode, which happens as soon as immersive audio is changed on its
+                // own. Show that as a checked "Custom" row so the list always marks what is
+                // active. It is a state, not a preset, so it appears only while overridden
+                // and never alongside an active mode.
                 if headphones.isModeOverridden {
+                    OptionRow(
+                        title: "Custom",
+                        symbolName: "slider.horizontal.3",
+                        isSelected: true,
+                        isDisabled: false
+                    ) {}
+
                     Text("Settings adjusted; no stored mode is active.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
