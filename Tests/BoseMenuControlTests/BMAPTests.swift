@@ -65,8 +65,25 @@ struct BMAPTests {
     }
 
     @Test func testDeviceNameDecoding() {
-        #expect(String(bmapPayload: bytes("00 55 6c 74 72 61 20 43 61 6e 73")) == "Ultra Cans")
+        #expect(String(bmapDeviceName: bytes("00 55 6c 74 72 61 20 43 61 6e 73")) == "Ultra Cans")
+        #expect(String(bmapDeviceName: []) == "")
+        #expect(String(bmapDeviceName: [1]) == "")
+    }
+
+    @Test func testDeviceNameMatchesAudioDeviceWithEitherPrefix() {
+        let name = "Bose QC Ultra 2 HP"
+        // Reproduces the leading control character observed in the app log on firmware 10.12.12.
+        for prefix: [UInt8] in [[], [0], [1]] {
+            let decoded = String(bmapDeviceName: prefix + Array(name.utf8) + [0, 0])
+            #expect(decoded == name)
+            #expect(AudioDeviceMonitor.contains([name], name: decoded))
+        }
+        #expect(String(bmapDeviceName: [1] + Array("Écouteurs 🎧".utf8)) == "Écouteurs 🎧")
+    }
+
+    @Test func testFirmwareVersionDecoding() {
         #expect(String(bmapPayload: bytes("38 2e 32 2e 32 30")) == "8.2.20")
+        #expect(String(bmapPayload: Array("10.12.12".utf8)) == "10.12.12")
     }
 
     @Test func testCapabilities() {

@@ -122,7 +122,7 @@ final class HeadphoneController: ObservableObject {
     private func loadHeadphones(name: String?) async {
         headphones = Headphones(name: name ?? "Bose headphones")
         do {
-            let deviceName = String(bmapPayload: try await connection.get(.deviceName))
+            let deviceName = String(bmapDeviceName: try await connection.get(.deviceName))
             if !deviceName.isEmpty { headphones?.name = deviceName }
             updateWornState()
             headphones?.firmwareVersion = String(bmapPayload: try await connection.get(.firmwareVersion))

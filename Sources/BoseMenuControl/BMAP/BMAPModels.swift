@@ -159,6 +159,12 @@ enum BosePrompt {
 }
 
 extension String {
+    /// Device-name replies can prefix the text with 0x00 or 0x01; neither is part of the name.
+    init(bmapDeviceName payload: [UInt8]) {
+        let text = payload.first == 0 || payload.first == 1 ? Array(payload.dropFirst()) : payload
+        self.init(bmapPayload: text)
+    }
+
     /// Decodes a BMAP string payload. Some replies lead with a zero flag byte before the text.
     init(bmapPayload payload: [UInt8]) {
         self = String(decoding: payload.drop(while: { $0 == 0 }).prefix(while: { $0 != 0 }), as: UTF8.self)
